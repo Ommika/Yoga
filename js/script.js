@@ -110,38 +110,70 @@ window.addEventListener('DOMContentLoaded', function () {
 
 	//модальное окно
 
+
+	// form.addEventListener('submit', function (event) {
+	// 	event.preventDefault();
+	// 	//отменяет перезагрузку страницы
+	// 	form.appendChild(statusMessage);
+	// 	//в окно формы добавлен блок со статусом сообщения
+
+	// 	let request = new XMLHttpRequest(); //создание запроса
+	// 	request.open('POST', 'server.php'); //настройка запроса методом POST(данные отправляются) и URL сервера
+
+	// 	request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	// 	//настройка заголовков http запросов в обычном формате
+
+	// 	//для обработки GET-запросов применяется LiveServer (VSCode)
+	// 	//для обработки POST-запросов необходимо установить локальный сервер:
+	// 	//WAMP - для Windows
+	// 	//MAMP - для Mac
+	// 	//LAMP - для Linuх
+
+	// 	let formData = new FormData(form);
+	// 	//получение данных от пользователя через встроенный объект FormData
+
+	// 	let obj = {};
+	// 	formData.forEach(function (value, key) {
+	// 		obj[key] = value;
+	// 	});
+
+	// 	request.send(formData); //отправка запроса 
+		
+	// 	request.addEventListener('readystatechange', function () {
+	// 		if (request.readyState < 4) {
+	// 			statusMessage.innerHTML = message.loading;
+	// 		} else if (request.readyState === 4 && request.status == 200) {
+	// 			statusMessage.innerHTML = message.success;
+	// 		} else {
+	// 			statusMessage.innerHTML = message.failure;
+	// 		}
+	// 	});
+
+	// 	for (let i = 0; i < input.length; i++) {
+	// 		input[i].value = '';
+	// 	}
+	// });
+	// //в обычном формате
+
+
+
 	form.addEventListener('submit', function (event) {
 		event.preventDefault();
-		//отменяет перезагрузку страницы
 		form.appendChild(statusMessage);
-		//в окно формы добавлен блок со статусом сообщения
-
-		let request = new XMLHttpRequest(); //создание запроса
-		request.open('POST', 'server.php'); //настройка запроса методом POST(данные отправляются) и URL сервера
-
-		//request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		//настройка заголовков http запросов в обычном формате
-
-		request.setRequestHeader('Content-type', 'application/json; charset=utf-8'); //настройка запросов в JSON формате 
-
-		//для обработки GET-запросов применяется LiveServer (VSCode)
-		//для обработки POST-запросов необходимо установить локальный сервер:
-		//WAMP - для Windows
-		//MAMP - для Mac
-		//LAMP - для Linuх
+		
+		let request = new XMLHttpRequest();
+		request.open('POST', 'server.php'); 
+		request.setRequestHeader('Content-type', 'application/json; charset=utf-8'); 
 
 		let formData = new FormData(form);
-		//получение данных от пользователя через встроенный объект FormData
 
 		let obj = {};
 		formData.forEach(function (value, key) {
 			obj[key] = value;
 		});
 		let json = JSON.stringify(obj);
-		//для JSON формата
-
-		// request.send(formData); отправка запроса в обычном формате
-		request.send(json); //отправка запроса в JSON формате
+		
+		request.send(json); 
 
 		request.addEventListener('readystatechange', function () {
 			if (request.readyState < 4) {
@@ -157,90 +189,57 @@ window.addEventListener('DOMContentLoaded', function () {
 			input[i].value = '';
 		}
 	});
+	//в JSON формате(предпочитаемый вариант)
 
-	// function sendForm(elem) {
-	// 	elem.addEventListener('submit', function(e){
-	// 		e.preventDefault();
-	// 		elem.appendChild(statusMessage);
-
-	// 		let request= new XMLHttpRequest();
-	// 		request.open('POST', 'server.php');
-
-	// 		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-	// 		let formData = new FormData(elem);
-
-	// 		request.send(formData);
-	// 		request.onreadystatechange = function(){
-	// 			if(request.readyState<4) {
-	// 				statusMessage.innerHTML=message.loading;
-	// 			} else if (request.readyState===4){
-	// 				if(request.status ==200 && request.status<300){
-	// 					thankModal.style.display = 'block';
-	// 					mainModal.style.display='none';
-	// 					statusMessage.innerHTML='';
-	// 				} else {
-	// 					statusMessage.innerHTML=message.failure;
-	// 				}			
-	// 			}
-	// 		}
-
-	// 	for (let i = 0; i < input.length; i++) {
-	// 		input[i].value = '';
-	// 	}
-	// 	});
-	// };
-
-	//без комментариев (обычный формат)
 
 	// function sendForm(elem) {
 	//  	elem.addEventListener('submit', function(e){
 	//  		e.preventDefault();
-	// 		elem.appendChild(statusMessage);
-	// 		let formData = new FormData(elem);
+	// 			elem.appendChild(statusMessage);
+	// 			let formData = new FormData(elem);
 
-	// 		function postData(data) {
-	// 			return new Promise(function(resolve, reject){
-	// 				let request= new XMLHttpRequest();
-	// 				request.open('POST', 'server.php');
-	// 				request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	// 			function postData(data) {
+	// 				return new Promise(function(resolve, reject){
+	// 					let request= new XMLHttpRequest();
+	// 					request.open('POST', 'server.php');
+	// 					request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
- 	// 				request.onreadystatechange = function(){
-	// 					if(request.readyState<4) {
-	// 						resolve()
-	// 					} else if (request.readyState===4){
-	// 						if(request.status ==200 && request.status<300){
+ 	// 					request.onreadystatechange = function(){
+	// 						if(request.readyState<4) {
 	// 							resolve()
-	// 						} else {
-	// 							reject()
-	// 	 					}	
+	// 						} else if (request.readyState===4){
+	// 							if(request.status ==200 && request.status<300){
+	// 								resolve()
+	// 							} else {
+	// 								reject()
+	// 	 						}	
+	// 						}
 	// 					}
+
+	// 					request.send(data);
+	// 				})
+	// 			}//end postData
+
+	// 			function clearInput () {
+	// 				for(let i=0; i<input.length; i++){
+	// 					input[i].value='';
 	// 				}
-
-	// 				request.send(data);
-	// 			})
-	// 		}//end postData
-
-	// 		function clearInput () {
-	// 			for(let i=0; i<input.length; i++){
-	// 				input[i].value='';
 	// 			}
-	// 		}
 
-	// 		postData(formData)
-	// 			.then(()=>statusMessage.innerHTML=message.loading)
-	// 			.then(()=> {
-	// 				thankModal.style.display='block';
-	// 				mainModal.style.display='none';
-	// 				statusMessage.innerHTML='';
-	// 			})
-	// 			.catch(()=> statusMessage.innerHTML=message.failure)
-	// 			.then(clearInput)
-	// 	});
-	// 	sendForm(form);
-	// 	sendForm(formButton);
+	// 			postData(formData)
+	// 				.then(()=>statusMessage.innerHTML=message.loading)
+	// 				.then(()=> {
+	// 					thankModal.style.display='block';
+	// 					mainModal.style.display='none';
+	// 					statusMessage.innerHTML='';
+	// 				})
+	// 				.catch(()=> statusMessage.innerHTML=message.failure)
+	// 				.then(clearInput)
+
+	//		});
+	// 		sendForm(form);
+	// 		sendForm(formButton);
 	// };
-
 	//ES6 with promise
 
 
