@@ -33,44 +33,31 @@ window.addEventListener('DOMContentLoaded', function () {
 		}
 	});
 
-	// timer
+	// timer (refactoring the code)
 
-	let deadLine = '2020-09-29';
-
-	function getTimeRemaining(endtime) {
-		let t = Date.parse(endtime) - Date.parse(new Date()),
-			seconds = Math.floor((t / 1000) % 60),
-			minutes = Math.floor((t / 1000 / 60) % 60),
-			hours = Math.floor((t / (1000 * 60 * 60)));
-		//вычисление остатка времени в часах, минутах, секундах
-
-		return {
-			'total': t,
-			'hours': hours,
-			'minutes': minutes,
-			'seconds': seconds
-		};
-	}
-
-	let timer = document.getElementById('timer'),
+	let deadLine = '2020-11-02 16:00:00',
+		timer = document.getElementById('timer'),
 		hours = timer.querySelector('.hours'),
 		minutes = timer.querySelector('.minutes'),
-		seconds = timer.querySelector('.seconds'),
-		timeInterval = setInterval(updateClock, 1000);
+		seconds = timer.querySelector('.seconds');
 
 	function updateClock() {
-		let t = getTimeRemaining(deadLine);
-
-		hours.textContent = ('0' + t.hours).slice(-2);
-		minutes.textContent = ('0' + t.minutes).slice(-2);
-		seconds.textContent = ('0' + t.seconds).slice(-2);
-		//вывод полученных данных на страницу
-
-		if (t.total <= 0) {
+		let diffTime = Date.parse(deadLine) / 1000 - new Date().getTime() / 1000;
+		updateContent('.hours', Math.floor(diffTime / (60 * 60)), -2);
+		updateContent('.minutes', Math.floor((diffTime / 60) % 60), -2);
+		updateContent('.seconds', Math.floor(diffTime % 60), -2);
+		if (diffTime <= 1) {
 			clearInterval(timeInterval);
+			hours.innerHTML='00';
+			minutes.innerHTML='00';
+			seconds.innerHTML='00';
 		}
-		//остановка таймера
 	}
+
+	function updateContent(label, value, slice) {
+		timer.querySelector(label).textContent = ('0' + value).slice(slice);
+	}
+	let timeInterval = setInterval(updateClock, 1000);
 
 	//modal
 
@@ -87,13 +74,12 @@ window.addEventListener('DOMContentLoaded', function () {
 		document.addEventListener('keydown', closeModal);
 	});
 
-	const closeModal = function (event) {
-		const target = event.target;
-		console.log(event);
+	let closeModal = function (event) {
+		let target = event.target;
 		if (
 			event.code === "Escape" ||
 			target.classList.contains('popup-close') ||
-			target.closest('.overlay')
+			target.classList.contains('fade')
 		) {
 			overlay.style.display = 'none';
 			more.classList.remove('more-splash');
@@ -103,4 +89,304 @@ window.addEventListener('DOMContentLoaded', function () {
 			document.removeEventListener('keydown', closeModal);
 		}
 	};
+
+	//form
+
+	let message = {
+		loading: 'Загрузка...',
+		success: 'Спасибо! Скоро мы с вами свяжемся!',
+		failure: 'Что-то пошло не так...'
+		//сообщения о состоянии
+	};
+
+	let form = document.querySelector('.main-form'),
+		input = form.getElementsByTagName('input'),
+		contactForm = document.getElementById('form'),
+		contactFormInput = contactForm.getElementsByTagName('input'),
+		statusMessage = document.createElement('div');
+
+	statusMessage.classList.add('status');
+
+
+	//модальное окно
+
+	form.addEventListener('submit', function (event) {
+		event.preventDefault();
+		//отменяет перезагрузку страницы
+		form.appendChild(statusMessage);
+		//в окно формы добавлен блок со статусом сообщения
+
+		let request = new XMLHttpRequest(); //создание запроса
+		request.open('POST', 'server.php'); //настройка запроса методом POST(данные отправляются) и URL сервера
+
+		//request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		//настройка заголовков http запросов в обычном формате
+
+		request.setRequestHeader('Content-type', 'application/json; charset=utf-8'); //настройка запросов в JSON формате 
+
+		//для обработки GET-запросов применяется LiveServer (VSCode)
+		//для обработки POST-запросов необходимо установить локальный сервер:
+		//WAMP - для Windows
+		//MAMP - для Mac
+		//LAMP - для Linuх
+
+		let formData = new FormData(form);
+		//получение данных от пользователя через встроенный объект FormData
+
+		let obj = {};
+		formData.forEach(function (value, key) {
+			obj[key] = value;
+		});
+		let json = JSON.stringify(obj);
+		//для JSON формата
+
+		// request.send(formData); отправка запроса в обычном формате
+		request.send(json); //отправка запроса в JSON формате
+
+		request.addEventListener('readystatechange', function () {
+			if (request.readyState < 4) {
+				statusMessage.innerHTML = message.loading;
+			} else if (request.readyState === 4 && request.status == 200) {
+				statusMessage.innerHTML = message.success;
+			} else {
+				statusMessage.innerHTML = message.failure;
+			}
+		});
+
+		for (let i = 0; i < input.length; i++) {
+			input[i].value = '';
+		}
+	});
+
+	// function sendForm(elem) {
+	// 	elem.addEventListener('submit', function(e){
+	// 		e.preventDefault();
+	// 		elem.appendChild(statusMessage);
+
+	// 		let request= new XMLHttpRequest();
+	// 		request.open('POST', 'server.php');
+
+	// 		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+	// 		let formData = new FormData(elem);
+
+	// 		request.send(formData);
+	// 		request.onreadystatechange = function(){
+	// 			if(request.readyState<4) {
+	// 				statusMessage.innerHTML=message.loading;
+	// 			} else if (request.readyState===4){
+	// 				if(request.status ==200 && request.status<300){
+	// 					thankModal.style.display = 'block';
+	// 					mainModal.style.display='none';
+	// 					statusMessage.innerHTML='';
+	// 				} else {
+	// 					statusMessage.innerHTML=message.failure;
+	// 				}			
+	// 			}
+	// 		}
+
+	// 	for (let i = 0; i < input.length; i++) {
+	// 		input[i].value = '';
+	// 	}
+	// 	});
+	// };
+
+	//без комментариев (обычный формат)
+
+	// function sendForm(elem) {
+	//  	elem.addEventListener('submit', function(e){
+	//  		e.preventDefault();
+	// 		elem.appendChild(statusMessage);
+	// 		let formData = new FormData(elem);
+
+	// 		function postData(data) {
+	// 			return new Promise(function(resolve, reject){
+	// 				let request= new XMLHttpRequest();
+	// 				request.open('POST', 'server.php');
+	// 				request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+ 	// 				request.onreadystatechange = function(){
+	// 					if(request.readyState<4) {
+	// 						resolve()
+	// 					} else if (request.readyState===4){
+	// 						if(request.status ==200 && request.status<300){
+	// 							resolve()
+	// 						} else {
+	// 							reject()
+	// 	 					}	
+	// 					}
+	// 				}
+
+	// 				request.send(data);
+	// 			})
+	// 		}//end postData
+
+	// 		function clearInput () {
+	// 			for(let i=0; i<input.length; i++){
+	// 				input[i].value='';
+	// 			}
+	// 		}
+
+	// 		postData(formData)
+	// 			.then(()=>statusMessage.innerHTML=message.loading)
+	// 			.then(()=> {
+	// 				thankModal.style.display='block';
+	// 				mainModal.style.display='none';
+	// 				statusMessage.innerHTML='';
+	// 			})
+	// 			.catch(()=> statusMessage.innerHTML=message.failure)
+	// 			.then(clearInput)
+	// 	});
+	// 	sendForm(form);
+	// 	sendForm(formButton);
+	// };
+
+	//ES6 with promise
+
+
+	//контактная форма
+
+	contactForm.addEventListener('submit', function (event) {
+		event.preventDefault();
+		contactForm.appendChild(statusMessage);
+
+
+		let request = new XMLHttpRequest();
+		request.open('POST', 'server.php');
+
+		request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+		let formData = new FormData(contactForm);
+
+		let obj = {};
+
+		formData.forEach(function (value, key) {
+			for (let i = 0; i < contactFormInput.length; i++) {
+				obj.key[i] = value[i];
+			}
+		});
+		let json = JSON.stringify(obj);
+
+		request.send(json);
+
+		request.addEventListener('readystatechange', function () {
+			if (request.readyState < 4) {
+				statusMessage.innerHTML = message.loading;
+			} else if (request.readyState === 4 && request.status == 200) {
+				statusMessage.innerHTML = message.success;
+			} else {
+				statusMessage.innerHTML = message.failure;
+			}
+		});
+
+		for (let i = 0; i < contactFormInput.length; i++) {
+			contactFormInput[i].value = '';
+		}
+	});
+
+ 	//slider
+
+	let slideIndex=1,
+	slides = document.querySelectorAll('.slider-item'),
+	prev = document.querySelector('.prev'),
+	next = document.querySelector('.next'),
+	dotsWrap= document.querySelector('.slider-dots'),
+	dots = document.querySelectorAll('.dot');
+
+
+	showSlides(slideIndex);
+
+	function showSlides(n) {
+
+		if(n>slides.length){
+			slideIndex=1;
+		}
+		if(n<1) {
+			slideIndex=slides.length;
+		}
+
+		slides.forEach((item)=> item.style.display='none');
+
+		// for(let i=0; i<slides.length; i++){
+		// 	slides[i].style.display='none';
+		// }
+		//you can use forEach method or this note
+
+		dots.forEach((item)=> item.classList.remove('dot-active'));
+		slides[slideIndex-1].style.display='block';
+		dots[slideIndex-1].classList.add('dot-active');
+
+	}
+
+	function plusSlides(n){
+		showSlides(slideIndex+=n);
+	}
+
+	function currentSlide(n){
+		showSlides(slideIndex=n);
+	}
+
+	prev.addEventListener('click', function() {
+		plusSlides(-1);
+	});
+
+	next.addEventListener('click', function(){
+		plusSlides(1);
+	});
+	//click on Prev and Next arrows
+
+	dotsWrap.addEventListener('click', function(event) {
+		for(let i=0; i<dots.length+1; i++) {
+			if(event.target.classList.contains('dot')&& event.target==dots[i-1]){
+				currentSlide(i);
+			}
+		}
+	});
+	//click on dots
+
+
+
+	//calc
+
+	let persons = document.querySelectorAll('.counter-block-input')[0],
+	restDays = document.querySelectorAll('.counter-block-input')[1],
+	place = document.getElementById('select'),
+	totalValue = document.getElementById('total'),
+	personsSum=0,
+	daysSum=0,
+	total=0;
+
+	totalValue.innerHTML=0;
+
+	persons.addEventListener('change', function(){
+		personsSum=+this.value;
+		total=daysSum*personsSum*7000;
+
+		if(restDays.value =='' || persons.value =='') {
+			totalValue.innerHTML=0;
+		} else {
+			totalValue.innerHTML=total;
+		}
+	});
+
+	restDays.addEventListener('change', function(){
+		daysSum=+this.value;
+		total=daysSum*personsSum*7000;
+
+		if(restDays.value =='' || persons.value =='') {
+			totalValue.innerHTML=0;
+		} else {
+			totalValue.innerHTML=total;
+		}
+	});
+
+	place.addEventListener('change', function(){
+		if(restDays.value =='' || persons.value ==''){
+			totalValue.innerHTML=0;
+		} else {
+			let a= total;
+			totalValue.innerHTML = a*this.options[this.selectedIndex].value;
+		}
+	});
+	
 });
